@@ -86,10 +86,6 @@ export default function LandingPage() {
 
           </div>
         </motion.div>
-
-        <div className="preview-float-2">
-          &quot;Stay strong, students ✊&quot;
-        </div>
       </motion.div>
     </div>
   );
