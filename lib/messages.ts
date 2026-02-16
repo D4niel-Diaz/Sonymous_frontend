@@ -4,6 +4,7 @@ export interface Message {
     id: number;
     content: string;
     category: string | null;
+    campus: string | null;
     created_at: string;
     likes_count: number;
     is_deleted?: boolean;
@@ -22,11 +23,13 @@ export interface MessagesResponse {
 export interface CreateMessagePayload {
     content: string;
     category?: string | null;
+    campus: string;
 }
 
-export async function getMessages(category?: string, page: number = 1): Promise<MessagesResponse> {
+export async function getMessages(category?: string, campus?: string, page: number = 1): Promise<MessagesResponse> {
     const params: Record<string, string | number> = { page };
     if (category) params.category = category;
+    if (campus) params.campus = campus;
     const res = await api.get<MessagesResponse>('/messages', { params });
     return res.data;
 }

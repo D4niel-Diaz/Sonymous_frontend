@@ -43,3 +43,20 @@ export async function getAdminMessages(params?: {
 export async function deleteMessage(id: number): Promise<void> {
     await api.delete(`/admin/messages/${id}`);
 }
+
+// Announcements
+import type { Announcement } from './announcements';
+
+export async function createAnnouncement(data: { title: string; content: string; is_active: boolean }): Promise<Announcement> {
+    const res = await api.post<Announcement>('/admin/announcements', data);
+    return res.data;
+}
+
+export async function updateAnnouncement(id: number, data: { title?: string; content?: string; is_active?: boolean }): Promise<Announcement> {
+    const res = await api.put<Announcement>(`/admin/announcements/${id}`, data);
+    return res.data;
+}
+
+export async function deleteAnnouncement(id: number): Promise<void> {
+    await api.delete(`/admin/announcements/${id}`);
+}

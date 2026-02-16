@@ -3,19 +3,19 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createMessage } from '@/lib/messages';
-import type { Message } from '@/lib/messages';
 import { useRouter } from 'next/navigation';
 
 export default function CreateMessagePage() {
     const [content, setContent] = useState('');
     const [category, setCategory] = useState('');
+    const [campus, setCampus] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const router = useRouter();
 
-    const MAX = 200;
+    const MAX = 3000;
     const charCount = content.length;
     const counterClass = charCount > MAX ? 'over' : charCount > 160 ? 'warn' : '';
 
@@ -42,6 +42,11 @@ export default function CreateMessagePage() {
             return;
         }
 
+        if (!campus) {
+            setError('Please select a campus.');
+            return;
+        }
+
         if (charCount > MAX) {
             setError(`Message must be ${MAX} characters or less.`);
             return;
@@ -52,9 +57,11 @@ export default function CreateMessagePage() {
             await createMessage({
                 content: content.trim(),
                 category: category || undefined,
+                campus,
             });
             setContent('');
             setCategory('');
+            setCampus('');
             setSuccess('Message posted anonymously! ✨ Redirecting...');
             setTimeout(() => router.push('/messages'), 1500);
         } catch (err: unknown) {
@@ -107,6 +114,20 @@ export default function CreateMessagePage() {
                 </motion.div>
 
                 <div className="create-row">
+                    <select
+                        className="create-select"
+                        value={campus}
+                        onChange={(e) => setCampus(e.target.value)}
+                        style={{ marginRight: '0.5rem' }}
+                    >
+                        <option value="">Select Campus</option>
+                        <option value="Main Campus">Main Campus</option>
+                        <option value="Bulan">Bulan</option>
+                        <option value="Magallanes">Magallanes</option>
+                        <option value="Castilla">Castilla</option>
+                        <option value="Baribag">Baribag</option>
+                    </select>
+
                     <select
                         className="create-select"
                         value={category}

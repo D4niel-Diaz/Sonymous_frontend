@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useSyncExternalStore, useCallback } from 'react';
 import type { AdminProfile } from '@/lib/admin';
 
 interface AdminContextType {
@@ -19,25 +19,33 @@ const AdminContext = createContext<AdminContextType>({
     logout: () => { },
 });
 
-export function AdminProvider({ children }: { children: React.ReactNode }) {
-    const [token, setToken] = useState<string | null>(null);
-    const [admin, setAdmin] = useState<AdminProfile | null>(null);
-    const [hydrated, setHydrated] = useState(false);
+// SSR-safe hydration check using useSyncExternalStore
+const emptySubscribe = () => () => { };
+const getSnapshot = () => true;
+const getServerSnapshot = () => false;
 
-    // Hydrate from localStorage on mount
-    useEffect(() => {
-        const savedToken = localStorage.getItem('admin_token');
-        const savedAdmin = localStorage.getItem('admin_profile');
-        if (savedToken && savedAdmin) {
-            setToken(savedToken);
-            try {
-                setAdmin(JSON.parse(savedAdmin));
-            } catch {
-                localStorage.removeItem('admin_profile');
-            }
-        }
-        setHydrated(true);
-    }, []);
+function useHydrated(): boolean {
+    return useSyncExternalStore(emptySubscribe, getSnapshot, getServerSnapshot);
+}
+
+function getStoredToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('admin_token');
+}
+
+function getStoredAdmin(): AdminProfile | null {
+    if (typeof window === 'undefined') return null;
+    const saved = localStorage.getItem('admin_profile');
+    if (saved) {
+        try { return JSON.parse(saved); } catch { localStorage.removeItem('admin_profile'); }
+    }
+    return null;
+}
+
+export function AdminProvider({ children }: { children: React.ReactNode }) {
+    const hydrated = useHydrated();
+    const [token, setToken] = useState<string | null>(getStoredToken);
+    const [admin, setAdmin] = useState<AdminProfile | null>(getStoredAdmin);
 
     const login = useCallback((newToken: string, newAdmin: AdminProfile) => {
         setToken(newToken);
@@ -53,7 +61,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem('admin_profile');
     }, []);
 
-    // Don't render children until localStorage is checked
+    // Don't render children until client is hydrated
     if (!hydrated) return null;
 
     return (

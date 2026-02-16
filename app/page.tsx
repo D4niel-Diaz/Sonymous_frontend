@@ -1,9 +1,18 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { getAnnouncements, Announcement } from '@/lib/announcements';
 
 export default function LandingPage() {
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [showAnnouncements, setShowAnnouncements] = useState(false);
+
+  useEffect(() => {
+    getAnnouncements().then(setAnnouncements).catch(console.error);
+  }, []);
+
   return (
     <div className="landing">
       {/* ── Left Section ── */}
@@ -15,6 +24,46 @@ export default function LandingPage() {
       >
         <div className="landing-logo">SoNymous</div>
         <div className="landing-tagline">a safe space for students</div>
+
+        {announcements.length > 0 && (
+          <div className="announcements-wrapper" style={{ marginBottom: '2rem' }}>
+            <button
+              onClick={() => setShowAnnouncements(!showAnnouncements)}
+              className="btn-outline"
+              style={{ marginBottom: '1rem', border: '1px solid #ffd700', color: '#ffd700', padding: '0.4rem 1rem', fontSize: '0.9rem' }}
+            >
+              {showAnnouncements ? 'Hide Announcements' : `📢 View Announcements (${announcements.length})`}
+            </button>
+
+            <AnimatePresence>
+              {showAnnouncements && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <div className="announcements-list" style={{ maxHeight: '300px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                    {announcements.map((a) => (
+                      <div key={a.id} className="announcement-card" style={{
+                        background: 'rgba(255, 235, 59, 0.15)',
+                        border: '1px solid rgba(255, 235, 59, 0.3)',
+                        padding: '1rem',
+                        borderRadius: '8px',
+                        marginBottom: '1rem',
+                        wordBreak: 'break-word',
+                        whiteSpace: 'pre-wrap'
+                      }}>
+                        <h3 style={{ margin: '0 0 0.5rem', color: '#ffd700', fontSize: '1.1rem' }}>📢 {a.title}</h3>
+                        <p style={{ margin: 0, fontSize: '0.95rem', lineHeight: '1.5' }}>{a.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
 
         <h1 className="landing-headline">
           <span className="line">Free to share your thoughts?</span>
@@ -86,6 +135,10 @@ export default function LandingPage() {
 
           </div>
         </motion.div>
+
+        <div className="preview-float-2">
+          &quot;Stay strong, students ✊&quot;
+        </div>
       </motion.div>
     </div>
   );

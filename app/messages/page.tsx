@@ -148,15 +148,17 @@ export default function BrowseMessagesPage() {
 
     const [messages, setMessages] = useState<Message[]>([]);
     const [category, setCategory] = useState(initialCategory);
-    const [loading, setLoading] = useState(true);
+    const [campus, setCampus] = useState('');
+    const [loading, setLoading] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
     const [page, setPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
     const [total, setTotal] = useState(0);
 
     const fetchMessages = useCallback(async (pageNum: number, append: boolean = false) => {
+        if (!campus) return; // Don't fetch if no campus selected
         try {
-            const res = await getMessages(category || undefined, pageNum);
+            const res = await getMessages(category || undefined, campus, pageNum);
             if (append) {
                 setMessages((prev) => [...prev, ...res.data]);
             } else {
@@ -170,22 +172,25 @@ export default function BrowseMessagesPage() {
             setLoading(false);
             setLoadingMore(false);
         }
-    }, [category]);
+    }, [category, campus]);
 
-    // Reset when category changes
+    // Reset when category or campus changes
     useEffect(() => {
-        setLoading(true);
-        setPage(1);
-        fetchMessages(1, false);
-    }, [fetchMessages]);
+        if (campus) {
+            setLoading(true);
+            setPage(1);
+            fetchMessages(1, false);
+        }
+    }, [fetchMessages, campus]);
 
     // Auto-refresh current messages every 30s
     useEffect(() => {
+        if (!campus) return;
         const interval = setInterval(() => {
             fetchMessages(1, false);
         }, 30000);
         return () => clearInterval(interval);
-    }, [fetchMessages]);
+    }, [fetchMessages, campus]);
 
     function handleLoadMore() {
         const nextPage = page + 1;
@@ -196,6 +201,49 @@ export default function BrowseMessagesPage() {
 
     const hasMore = page < lastPage;
 
+    if (!campus) {
+        return (
+            <div className="campus-selection-overlay" style={{
+                position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 50,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', p: 4
+            }}>
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="campus-card"
+                    style={{ background: '#1a1a1a', padding: '2rem', borderRadius: '16px', border: '1px solid #333', maxWidth: '400px', width: '100%', textAlign: 'center' }}
+                >
+                    <h2 style={{ marginBottom: '1.5rem', fontSize: '1.5rem' }}>🏫 Select Campus</h2>
+                    <p style={{ color: '#888', marginBottom: '2rem' }}>To browse messages, please select your campus.</p>
+                    <div style={{ display: 'grid', gap: '0.75rem' }}>
+                        {['Main Campus', 'Bulan', 'Magallanes', 'Castilla', 'Baribag'].map((c) => (
+                            <button
+                                key={c}
+                                onClick={() => setCampus(c)}
+                                className="campus-btn"
+                                style={{
+                                    padding: '1rem',
+                                    borderRadius: '8px',
+                                    background: '#333',
+                                    border: 'none',
+                                    color: 'white',
+                                    fontSize: '1rem',
+                                    cursor: 'pointer',
+                                    transition: 'background 0.2s',
+                                    textAlign: 'left'
+                                }}
+                                onMouseOver={(e) => (e.currentTarget.style.background = '#444')}
+                                onMouseOut={(e) => (e.currentTarget.style.background = '#333')}
+                            >
+                                📍 {c}
+                            </button>
+                        ))}
+                    </div>
+                </motion.div>
+            </div>
+        );
+    }
+
     return (
         <div className="browse-page">
             <motion.div
@@ -204,7 +252,18 @@ export default function BrowseMessagesPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
             >
-                <h1 className="browse-title">💬 Message Wall</h1>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                    <h1 className="browse-title">💬 Message Wall</h1>
+                    <button
+                        onClick={() => setCampus('')}
+                        style={{
+                            fontSize: '0.8rem', padding: '0.3rem 0.8rem', borderRadius: '20px',
+                            background: '#333', border: 'none', color: '#ccc', cursor: 'pointer'
+                        }}
+                    >
+                        📍 {campus} (Change)
+                    </button>
+                </div>
                 <p className="browse-subtitle">
                     Read what others have shared — anonymously.
                     {total > 0 && <span className="browse-count"> · {total} messages</span>}
