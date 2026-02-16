@@ -12,12 +12,13 @@ interface Props {
 export default function MessageForm({ onMessageCreated }: Props) {
     const [content, setContent] = useState('');
     const [category, setCategory] = useState('');
+    const [campus, setCampus] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
 
     const charCount = content.length;
-    const MAX = 200;
+    const MAX = 3000;
 
     const counterClass = charCount > MAX ? 'over' : charCount > 160 ? 'warn' : '';
 
@@ -31,6 +32,11 @@ export default function MessageForm({ onMessageCreated }: Props) {
             return;
         }
 
+        if (!campus) {
+            setError('Please select a campus.');
+            return;
+        }
+
         if (charCount > MAX) {
             setError(`Message must be ${MAX} characters or less.`);
             return;
@@ -41,9 +47,11 @@ export default function MessageForm({ onMessageCreated }: Props) {
             const msg = await createMessage({
                 content: content.trim(),
                 category: category || undefined,
+                campus,
             });
             setContent('');
             setCategory('');
+            setCampus('');
             setSuccess('Message posted anonymously! ✨');
             onMessageCreated(msg);
             setTimeout(() => setSuccess(''), 3000);
@@ -100,8 +108,23 @@ export default function MessageForm({ onMessageCreated }: Props) {
             <div className="form-row">
                 <select
                     className="form-select"
+                    value={campus}
+                    onChange={(e) => setCampus(e.target.value)}
+                    style={{ marginRight: '0.5rem', flex: 1 }}
+                >
+                    <option value="">Select Campus</option>
+                    <option value="Main Campus">Main Campus</option>
+                    <option value="Bulan">Bulan</option>
+                    <option value="Magallanes">Magallanes</option>
+                    <option value="Castilla">Castilla</option>
+                    <option value="Baribag">Baribag</option>
+                </select>
+
+                <select
+                    className="form-select"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
+                    style={{ flex: 1 }}
                 >
                     <option value="">No category</option>
                     <option value="advice">💡 Advice</option>
