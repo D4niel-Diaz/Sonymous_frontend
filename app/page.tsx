@@ -14,7 +14,7 @@ export default function LandingPage() {
         transition={{ duration: 0.7, ease: 'easeOut' }}
       >
         <div className="landing-logo">SoNymous</div>
-        <div className="landing-tagline">a safe space for sorsu students</div>
+        <div className="landing-tagline">a safe space for students</div>
 
         <h1 className="landing-headline">
           <span className="line">Free to share your thoughts?</span>
