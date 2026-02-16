@@ -205,7 +205,7 @@ export default function BrowseMessagesPage() {
         return (
             <div className="campus-selection-overlay" style={{
                 position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 50,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', p: 4
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem'
             }}>
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
