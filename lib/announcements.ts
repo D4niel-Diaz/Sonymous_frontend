@@ -10,6 +10,6 @@ export interface Announcement {
 }
 
 export async function getAnnouncements(): Promise<Announcement[]> {
-    const res = await api.get<Announcement[]>('/announcements');
+    const res = await api.get<Announcement[]>('/public-announcements');
     return res.data;
 }
